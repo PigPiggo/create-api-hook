@@ -16,6 +16,7 @@ export interface ApiConfig {
   timeout?: number;
   headers?: Record<string, string>;
   withCredentials?: boolean;
+  debounce?: boolean; // 是否防抖，默认为 true
   retry?: {
     count: number;
     delay: number;
@@ -187,6 +188,7 @@ export class ApiInstance {
   private responseInterceptors: InterceptorHandler<ApiResponse>[] = [];
   private cache = new Map<string, CacheItem>();
   private abortControllers = new Map<string, AbortController>();
+  private pendingRequests = new Map<string, Promise<ApiResponse>>(); // 跟踪正在进行的请求
   private logger: Logger;
 
   constructor(config: ApiConfig = {}) {
@@ -197,6 +199,7 @@ export class ApiInstance {
         'Content-Type': 'application/json',
       },
       withCredentials: false,
+      debounce: true, // 默认开启防抖
       retry: {
         count: 0,
         delay: 1000,
@@ -218,6 +221,12 @@ export class ApiInstance {
 
   // 生成缓存键
   private generateCacheKey(config: RequestConfig): string {
+    const { url, method, params, data } = config;
+    return `${method}:${url}:${JSON.stringify(params)}:${JSON.stringify(data)}`;
+  }
+
+  // 生成请求键用于防抖
+  private generateRequestKey(config: RequestConfig): string {
     const { url, method, params, data } = config;
     return `${method}:${url}:${JSON.stringify(params)}:${JSON.stringify(data)}`;
   }
@@ -468,8 +477,29 @@ export class ApiInstance {
     // 应用请求拦截器
     const requestConfig = await this.applyRequestInterceptors(this.createRequestConfig(config));
     
+    // 生成请求键用于防抖
+    const requestKey = this.generateRequestKey(requestConfig);
+    
+    // 如果开启了防抖且相同请求正在进行，返回现有的 Promise
+    if (this.config.debounce && this.pendingRequests.has(requestKey)) {
+      this.logger.debug('请求正在进行中，返回现有 Promise', { key: requestKey });
+      return this.pendingRequests.get(requestKey)!;
+    }
+    
     // 执行请求（带重试）
-    return this.executeWithRetry<T>(requestConfig);
+    const requestPromise = this.executeWithRetry<T>(requestConfig);
+    
+    // 如果开启了防抖，将请求添加到 pendingRequests
+    if (this.config.debounce) {
+      this.pendingRequests.set(requestKey, requestPromise);
+      
+      // 请求完成后从 pendingRequests 中移除
+      requestPromise.finally(() => {
+        this.pendingRequests.delete(requestKey);
+      });
+    }
+    
+    return requestPromise;
   }
 
   private get<T = any>(url: string, config?: Omit<RequestConfig, 'url' | 'method'>): Promise<ApiResponse<T>> {
@@ -621,69 +651,6 @@ export class ApiInstance {
 }
 
 // ==================== 工具函数 ====================
-
-// 防抖函数
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
-
-// 节流函数
-export function throttle<T extends (...args: any[]) => any>(
-  func: T,
-  limit: number
-): (...args: Parameters<T>) => void {
-  let inThrottle: boolean;
-  return (...args: Parameters<T>) => {
-    if (!inThrottle) {
-      func(...args);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
-    }
-  };
-}
-
-// 创建带防抖的 API Hook
-export function createDebouncedApiHook<T = unknown>(
-  config: RequestConfig | ((...args: unknown[]) => RequestConfig),
-  delay: number = 300,
-  apiInstance: ApiInstance = api
-) {
-  const hook = apiInstance.createApiHook<T>(config);
-  return () => {
-    const apiHook = hook();
-    const debouncedExecute = debounce(apiHook.execute, delay);
-    
-    return {
-      ...apiHook,
-      execute: debouncedExecute,
-    };
-  };
-}
-
-// 创建带节流的 API Hook
-export function createThrottledApiHook<T = unknown>(
-  config: RequestConfig | ((...args: unknown[]) => RequestConfig),
-  limit: number = 1000,
-  apiInstance: ApiInstance = api
-) {
-  const hook = apiInstance.createApiHook<T>(config);
-  return () => {
-    const apiHook = hook();
-    const throttledExecute = throttle(apiHook.execute, limit);
-    
-    return {
-      ...apiHook,
-      execute: throttledExecute,
-    };
-  };
-}
 
 // 批量请求工具
 export async function batchRequests<T>(
