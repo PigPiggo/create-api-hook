@@ -88,11 +88,11 @@ interface CacheItem {
 }
 
 // 工厂函数返回的 hook 类型
-export interface ApiHookReturn<T> {
+export interface ApiHookReturn<TResponse, TRequest = unknown> {
   loading: boolean;
   error: ApiError | null;
-  data: T | null;
-  execute: (...args: unknown[]) => Promise<T>;
+  data: TResponse | null;
+  execute: (requestData?: TRequest) => Promise<TResponse>;
   reset: () => void;
   cancel: () => void;
 }

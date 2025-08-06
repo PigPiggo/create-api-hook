@@ -6,7 +6,7 @@ import { ApiInstance, ApiConfig, RequestConfig, ApiError, ApiHookReturn } from '
  * @param config ApiInstance 配置参数
  * @returns apiHook 函数，该函数可以创建具体的 API Hook
  */
-export function createApiHook(config: ApiConfig) {
+export function createApiHook<TBaseResponse = unknown>(config: ApiConfig) {
   // 使用闭包创建 ApiInstance，外部无法直接访问
   const apiInstance = new ApiInstance(config);
 
@@ -15,16 +15,24 @@ export function createApiHook(config: ApiConfig) {
    * @param requestConfig 请求配置或配置生成函数
    * @returns React Hook 函数
    */
-  const apiHook = <T = unknown>(
-    requestConfig: RequestConfig | ((...args: unknown[]) => RequestConfig)
-  ) => {
-    return (): ApiHookReturn<T> => {
+  function apiHook<TRequest, TResponse>(
+    requestConfig: (data: TRequest) => RequestConfig
+  ): () => ApiHookReturn<TBaseResponse & TResponse, TRequest>;
+  
+  function apiHook<TResponse>(
+    requestConfig: RequestConfig
+  ): () => ApiHookReturn<TBaseResponse & TResponse, unknown>;
+  
+  function apiHook<TRequest = unknown, TResponse = unknown>(
+    requestConfig: RequestConfig | ((data: TRequest) => RequestConfig)
+  ) {
+    return (): ApiHookReturn<TBaseResponse & TResponse, TRequest> => {
       const [loading, setLoading] = useState(false);
       const [error, setError] = useState<ApiError | null>(null);
-      const [data, setData] = useState<T | null>(null);
+      const [data, setData] = useState<TBaseResponse & TResponse | null>(null);
       const [abortController, setAbortController] = useState<AbortController | null>(null);
 
-      const execute = async (...args: unknown[]) => {
+      const execute = async (requestData?: TRequest) => {
         // 取消之前的请求
         if (abortController) {
           abortController.abort();
@@ -40,19 +48,19 @@ export function createApiHook(config: ApiConfig) {
           let finalRequestConfig: RequestConfig;
           
           if (typeof requestConfig === 'function') {
-            finalRequestConfig = requestConfig(...args);
+            finalRequestConfig = requestConfig(requestData as TRequest);
           } else {
             finalRequestConfig = { ...requestConfig };
             // 如果是 POST/PUT/PATCH 请求且有参数，添加到 data
-            if (['POST', 'PUT', 'PATCH'].includes(finalRequestConfig.method || 'GET') && args.length > 0) {
-              finalRequestConfig.data = args[0];
+            if (['POST', 'PUT', 'PATCH'].includes(finalRequestConfig.method || 'GET') && requestData) {
+              finalRequestConfig.data = requestData;
             }
           }
 
           // 添加 AbortSignal
           finalRequestConfig.signal = controller.signal;
           // 通过闭包访问 apiInstance
-          const response = await apiInstance.request<T>(finalRequestConfig);
+          const response = await apiInstance.request<TBaseResponse & TResponse>(finalRequestConfig);
           setData(response.data);
           return response.data;
         } catch (err) {
