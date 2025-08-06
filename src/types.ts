@@ -1,4 +1,4 @@
-import { useState } from 'react';
+// ==================== 类型定义 ====================
 
 // 通用错误类型
 export interface ApiError {
@@ -14,6 +14,7 @@ export interface ApiConfig {
   timeout?: number;
   headers?: Record<string, string>;
   withCredentials?: boolean;
+  debounce?: boolean; // 是否防抖，默认为 true
   retry?: {
     count: number;
     delay: number;
@@ -136,27 +137,3 @@ export interface Logger {
   warn: (message: string, data?: any) => void;
   error: (message: string, error?: any) => void;
 }
-
-// 预设配置类型
-export type PresetConfig = 'rest' | 'graphql' | 'file' | 'json' | 'form';
-
-// 请求进度回调
-export interface ProgressCallback {
-  (progress: number): void;
-}
-
-// 重试策略
-export interface RetryStrategy {
-  count: number;
-  delay: number;
-  backoff: 'linear' | 'exponential';
-  shouldRetry?: (error: any, attempt: number) => boolean;
-}
-
-// 缓存策略
-export interface CacheStrategy {
-  enabled: boolean;
-  ttl: number;
-  keyGenerator?: (config: RequestConfig) => string;
-  shouldCache?: (response: ApiResponse) => boolean;
-} 
