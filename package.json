@@ -39,7 +39,7 @@
     "throttle",
     "batch-request"
   ],
-  "author": "Your Name",
+  "author": "PigPiggo",
   "license": "MIT",
   "peerDependencies": {
     "react": ">=16.8.0"
@@ -60,10 +60,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/create-api-hook.git"
+    "url": "https://github.com/PigPiggo/create-api-hook.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/create-api-hook/issues"
+    "url": "https://github.com/PigPiggo/create-api-hook/issues"
   },
-  "homepage": "https://github.com/yourusername/create-api-hook#readme"
+  "homepage": "https://github.com/PigPiggo/create-api-hook#readme"
 }
