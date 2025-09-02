@@ -1,6 +1,6 @@
 # create-api-hook
 
-一个功能强大的基于 React Hooks 的 API 请求库，提供简洁的 API 调用接口、拦截器、缓存、重试、防抖节流等功能。
+一个功能强大的基于 React Hooks 的 API 请求库，提供简洁的 API 调用接口、拦截器、缓存、重试等功能。
 
 ## ✨ 特性
 
@@ -8,7 +8,6 @@
 - 🔄 **自动重试** - 支持指数退避和线性重试策略
 - 💾 **智能缓存** - 内置缓存系统，支持 TTL 配置
 - 🛡️ **请求拦截器** - 支持请求和响应拦截器
-- ⚡ **防抖节流** - 内置防抖和节流功能
 - 📦 **批量请求** - 支持并行和顺序批量请求
 - 🎯 **TypeScript** - 完整的 TypeScript 支持
 - 📊 **日志系统** - 内置日志系统，支持不同级别
@@ -29,10 +28,12 @@ yarn add create-api-hook
 
 ```tsx
 import React from 'react';
-import { createApiHook, api } from 'create-api-hook';
+import { createApiHook } from 'create-api-hook';
 
 // 创建 API Hook
 const useUserData = createApiHook({
+  baseURL: 'https://api.example.com',
+})({
   url: '/api/users',
   method: 'GET',
 });
@@ -79,6 +80,8 @@ function UserDetail({ userId }: { userId: string }) {
 
 ```tsx
 const useCreateUser = createApiHook({
+  baseURL: 'https://api.example.com',
+})({
   url: '/api/users',
   method: 'POST',
 });
@@ -111,10 +114,10 @@ function CreateUserForm() {
 ### 自定义 API 实例
 
 ```tsx
-import { createApiInstance, createApiHook } from 'create-api-hook';
+import { ApiInstance, createApiHook } from 'create-api-hook';
 
 // 创建自定义 API 实例
-const customApi = createApiInstance({
+const customApi = new ApiInstance({
   baseURL: 'https://api.example.com',
   timeout: 5000,
   headers: {
@@ -136,10 +139,10 @@ const customApi = createApiInstance({
 });
 
 // 使用自定义实例创建 Hook
-const useCustomApi = createApiHook({
+const useCustomApi = createApiHook(customApi)({
   url: '/api/data',
   method: 'GET',
-}, customApi);
+});
 ```
 
 ### 拦截器
@@ -172,30 +175,7 @@ customApi.interceptors.response.use(
 );
 ```
 
-### 防抖和节流
 
-```tsx
-import { createDebouncedApiHook, createThrottledApiHook } from 'create-api-hook';
-
-// 防抖 Hook（300ms 延迟）
-const useDebouncedSearch = createDebouncedApiHook(
-  (query: string) => ({
-    url: '/api/search',
-    method: 'GET',
-    params: { q: query },
-  }),
-  300
-);
-
-// 节流 Hook（1000ms 限制）
-const useThrottledUpdate = createThrottledApiHook(
-  {
-    url: '/api/update',
-    method: 'POST',
-  },
-  1000
-);
-```
 
 ### 批量请求
 
@@ -206,7 +186,9 @@ const useBatchRequests = createBatchApiHook([
   { url: '/api/users', method: 'GET' },
   { url: '/api/posts', method: 'GET' },
   { url: '/api/comments', method: 'GET' },
-]);
+], {
+  baseURL: 'https://api.example.com',
+});
 
 function Dashboard() {
   const { loading, error, data, executeBatch, executeSequential } = useBatchRequests();
@@ -240,6 +222,8 @@ import { createEnhancedApiHook, RequestStatus } from 'create-api-hook';
 const useEnhancedUser = createEnhancedApiHook({
   url: '/api/users',
   method: 'GET',
+}, {
+  baseURL: 'https://api.example.com',
 });
 
 function EnhancedUserComponent() {
@@ -312,14 +296,14 @@ new ApiInstance(config?: ApiConfig)
 #### 方法
 
 - `request<T>(config: RequestConfig): Promise<ApiResponse<T>>`
-- `get<T>(url: string, config?: RequestConfig): Promise<ApiResponse<T>>`
-- `post<T>(url: string, data?: any, config?: RequestConfig): Promise<ApiResponse<T>>`
-- `put<T>(url: string, data?: any, config?: RequestConfig): Promise<ApiResponse<T>>`
-- `delete<T>(url: string, config?: RequestConfig): Promise<ApiResponse<T>>`
-- `patch<T>(url: string, data?: any, config?: RequestConfig): Promise<ApiResponse<T>>`
-- `createApiHook<T>(config): () => ApiHookReturn<T>`
 - `clearCache(): void`
 - `cancelAllRequests(): void`
+
+#### 属性
+
+- `interceptors` (只读): 拦截器管理对象
+  - `interceptors.request`: 请求拦截器
+  - `interceptors.response`: 响应拦截器
 
 ### 配置接口
 
@@ -403,19 +387,12 @@ interface EnhancedApiHookReturn<T> {
 
 ### 工具函数
 
-- `createApiInstance(config: ApiConfig): ApiInstance`
-- `createApiHook<T>(config, apiInstance?): () => ApiHookReturn<T>`
-- `createDebouncedApiHook<T>(config, delay?, apiInstance?): () => ApiHookReturn<T>`
-- `createThrottledApiHook<T>(config, limit?, apiInstance?): () => ApiHookReturn<T>`
-- `createBatchApiHook<T>(configs, apiInstance?): () => BatchApiHookReturn<T>`
-- `createEnhancedApiHook<T>(config, apiInstance?): () => EnhancedApiHookReturn<T>`
+- `createApiHook<T>(config): () => ApiHookReturn<T>`
+- `createBatchApiHook<T>(configs, apiConfig?): () => BatchApiHookReturn<T>`
+- `createEnhancedApiHook<T>(config, apiConfig?): () => EnhancedApiHookReturn<T>`
 - `createPresetApiInstance(preset, config?): ApiInstance`
-- `debounce<T>(func, wait): (...args) => void`
-- `throttle<T>(func, limit): (...args) => void`
 - `batchRequests<T>(requests): Promise<T[]>`
 - `sequentialRequests<T>(requests): Promise<T[]>`
-- `generateCacheKey(url, method, params?, data?): string`
-- `validateRequestConfig(config): string[]`
 
 ## 🧪 测试
 
