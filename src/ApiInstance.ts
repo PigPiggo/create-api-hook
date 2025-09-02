@@ -375,7 +375,16 @@ export class ApiInstance {
 
     // 添加请求体
     if (config.data && ['POST', 'PUT', 'PATCH'].includes(config.method || 'GET')) {
-      fetchConfig.body = JSON.stringify(config.data);
+      // 如果是 FormData，直接使用，不要 JSON.stringify
+      if (config.data instanceof FormData) {
+        fetchConfig.body = config.data;
+        // 删除 Content-Type 头，让浏览器自动设置 multipart/form-data 的 boundary
+        if (fetchConfig.headers && (fetchConfig.headers as any)['Content-Type']) {
+          delete (fetchConfig.headers as any)['Content-Type'];
+        }
+      } else {
+        fetchConfig.body = JSON.stringify(config.data);
+      }
     }
 
     // 创建或使用现有的 AbortController
