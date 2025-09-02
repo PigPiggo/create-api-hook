@@ -301,7 +301,7 @@ new ApiInstance(config?: ApiConfig)
 
 #### 属性
 
-- `interceptors` (只读): 拦截器管理对象
+- `interceptors`: 拦截器管理对象
   - `interceptors.request`: 请求拦截器
   - `interceptors.response`: 响应拦截器
 

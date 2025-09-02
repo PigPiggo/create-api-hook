@@ -529,15 +529,5 @@ export class ApiInstance {
     };
   }
 
-  set interceptors(interceptors: Partial<{
-    request: InterceptorHandler<RequestConfig>[];
-    response: InterceptorHandler<ApiResponse>[];
-  }>) {
-    if (interceptors.request) {
-      this.requestInterceptors = interceptors.request;
-    }
-    if (interceptors.response) {
-      this.responseInterceptors = interceptors.response;
-    }
-  }
+
 }

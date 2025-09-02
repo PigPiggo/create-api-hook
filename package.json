@@ -1,7 +1,7 @@
 {
   "name": "create-api-hook",
-  "version": "1.0.1",
-  "description": "一个功能强大的基于 React Hooks 的 API 请求库，提供简洁的 API 调用接口、拦截器、缓存、重试等功能",
+  "version": "1.0.0",
+  "description": "一个功能强大的基于 React Hooks 的 API 请求库，提供简洁的 API 调用接口、拦截器、缓存、重试、防抖节流等功能",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -35,6 +35,8 @@
     "interceptor",
     "cache",
     "retry",
+    "debounce",
+    "throttle",
     "batch-request"
   ],
   "author": "Your Name",
