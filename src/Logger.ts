@@ -1,4 +1,4 @@
-import { Logger, LogLevel } from './types';
+import { Logger, LogLevel } from './ApiInstance';
 
 // ==================== 日志系统 ====================
 
