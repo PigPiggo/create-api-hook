@@ -10,7 +10,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c && tsc --emitDeclarationOnly",
     "dev": "rollup -c -w",
     "type-check": "tsc --noEmit",
     "lint": "eslint src",
