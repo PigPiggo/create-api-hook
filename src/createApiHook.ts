@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { ApiInstance, ApiConfig, RequestConfig, ApiError, ApiHookReturn } from './ApiInstance';
 
 /**
@@ -32,7 +32,7 @@ export function createApiHook<TBaseResponse = unknown>(config: ApiConfig) {
       const [data, setData] = useState<TBaseResponse & TResponse | null>(null);
       const [abortController, setAbortController] = useState<AbortController | null>(null);
 
-      const execute = async (requestData?: TRequest) => {
+      const execute = useCallback(async (requestData?: TRequest) => {
         // 取消之前的请求
         if (abortController) {
           abortController.abort();
@@ -69,7 +69,7 @@ export function createApiHook<TBaseResponse = unknown>(config: ApiConfig) {
           setLoading(false);
           setAbortController(null);
         }
-      };
+      }, [abortController, requestConfig, apiInstance]);
 
       const reset = () => {
         setLoading(false);
@@ -98,7 +98,7 @@ export function createApiHook<TBaseResponse = unknown>(config: ApiConfig) {
         cancel,
       };
     };
-  };
+  }
 
   // 扩展 apiHook，添加一些实例方法的访问
   const extendedApiHook = Object.assign(apiHook, {

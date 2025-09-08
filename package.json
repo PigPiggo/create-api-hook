@@ -65,5 +65,8 @@
   "bugs": {
     "url": "https://github.com/PigPiggo/create-api-hook/issues"
   },
-  "homepage": "https://github.com/PigPiggo/create-api-hook#readme"
+  "homepage": "https://github.com/PigPiggo/create-api-hook#readme",
+  "engines": {
+    "node": "18.19.0"
+  }
 }
