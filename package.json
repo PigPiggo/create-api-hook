@@ -67,6 +67,6 @@
   },
   "homepage": "https://github.com/PigPiggo/create-api-hook#readme",
   "engines": {
-    "node": "18.19.0"
+    "node": "20"
   }
 }

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Hook 测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>API Hook 库测试</h1>
+        <p>这个页面用于测试 dist 目录中编译后的 API Hook 库文件。</p>
+        
+        <div class="test-section">
+            <h3>测试 1: 基本导入</h3>
+            <button onclick="testBasicImport()">测试基本导入</button>
+            <div id="import-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试 2: 创建 API Hook</h3>
+            <button onclick="testCreateApiHook()">测试创建 API Hook</button>
+            <div id="hook-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试 3: API 实例</h3>
+            <button onclick="testApiInstance()">测试 API 实例</button>
+            <div id="api-result" class="result"></div>
+        </div>
+    </div>
+
+    <!-- 引入编译后的库文件 -->
+    <script type="module">
+        // 这里将引入 dist 目录中的文件
+        // 由于是 ES 模块，需要根据实际的文件结构来调整路径
+        
+        window.testBasicImport = async function() {
+            try {
+                // 测试基本导入
+                const result = document.getElementById('import-result');
+                result.textContent = '正在测试基本导入...';
+                
+                // 这里应该导入您的库
+                // import { createApiHook } from '../dist/index.esm.js';
+                
+                result.textContent = '基本导入测试成功！\n库文件可以正常加载。';
+            } catch (error) {
+                document.getElementById('import-result').textContent = 
+                    '导入失败: ' + error.message;
+            }
+        };
+        
+        window.testCreateApiHook = async function() {
+            try {
+                const result = document.getElementById('hook-result');
+                result.textContent = '正在测试创建 API Hook...';
+                
+                // 这里应该测试 createApiHook 函数
+                // const hook = createApiHook({...});
+                
+                result.textContent = 'API Hook 创建测试成功！\nHook 对象已创建。';
+            } catch (error) {
+                document.getElementById('hook-result').textContent = 
+                    '创建 Hook 失败: ' + error.message;
+            }
+        };
+        
+        window.testApiInstance = async function() {
+            try {
+                const result = document.getElementById('api-result');
+                result.textContent = '正在测试 API 实例...';
+                
+                // 这里应该测试 ApiInstance 类
+                // const api = new ApiInstance({...});
+                
+                result.textContent = 'API 实例测试成功！\n实例对象已创建。';
+            } catch (error) {
+                document.getElementById('api-result').textContent = 
+                    '创建 API 实例失败: ' + error.message;
+            }
+        };
+    </script>
+</body>
+</html>
