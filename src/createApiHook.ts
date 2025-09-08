@@ -69,7 +69,7 @@ export function createApiHook<TBaseResponse = unknown>(config: ApiConfig) {
           setLoading(false);
           setAbortController(null);
         }
-      }, [abortController, requestConfig, apiInstance]);
+      }, [requestConfig, apiInstance]);
 
       const reset = () => {
         setLoading(false);
